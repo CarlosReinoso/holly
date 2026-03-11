@@ -1,4 +1,8 @@
-"""Repository layer. Use like logging. Implementations connect to DB, API, etc."""
+"""Repository facade for directory and facility lookups.
+
+Provides a single module-level API; currently backed by MockRepository.
+Switch _repo to a DB-backed implementation for production.
+"""
 
 from db.mock import MockRepository
 from db.repository import Repository

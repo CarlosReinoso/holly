@@ -1,4 +1,9 @@
-"""Facility and building information for The Shard reception."""
+"""Facility and building information for The Shard reception.
+
+get_available_facilities returns a catalog of keys and search terms so the
+LLM can map natural language ("where's the loo") to a key. get_facility_info
+returns directions and details for that key.
+"""
 
 from __future__ import annotations
 

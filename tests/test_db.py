@@ -1,4 +1,8 @@
-"""Unit tests for db repository layer."""
+"""Unit tests for the db repository layer.
+
+Covers MockRepository behaviour (search, get, facilities) and the db module
+facade that delegates to the active repository.
+"""
 
 from db import get_all_facilities, get_facility, search_persons
 from db.mock import MockRepository

@@ -1,9 +1,15 @@
-"""Unit tests for The Shard receptionist tools."""
+"""Unit tests for The Shard receptionist tools.
+
+Covers directory (person lookup, search), facility (catalog + info),
+and weather (location resolution, API response formatting).
+"""
 
 from unittest.mock import patch
 
 from tools.directory import lookup_person, search_persons_for_lookup
 from tools.facility import get_available_facilities, get_facility_info
+from tools.holidays import check_public_holiday
+from tools.time import get_current_time
 from tools.weather import lookup_weather
 
 # ---------------------------------------------------------------------------
@@ -374,3 +380,119 @@ class TestLookupWeather:
         result = lookup_weather("LONDON")
         assert "london" in result.lower()
         assert "degree" in result.lower() or "celsius" in result.lower()
+
+
+# ---------------------------------------------------------------------------
+# Time: get_current_time
+# ---------------------------------------------------------------------------
+
+
+class TestGetCurrentTime:
+    """Tests for current time lookup."""
+
+    def test_returns_time_string(self) -> None:
+        """Returns voice-friendly time like 'It's currently 3:10 PM.'"""
+        result = get_current_time("Europe/London")
+        assert "currently" in result.lower()
+        assert "it's" in result.lower() or "it is" in result.lower()
+        # Should have a time pattern (e.g. "3:10 PM" or "15:10")
+        assert "am" in result.lower() or "pm" in result.lower()
+
+    def test_empty_timezone_defaults_to_london(self) -> None:
+        result = get_current_time("")
+        assert "currently" in result.lower()
+
+    def test_whitespace_timezone_defaults_to_london(self) -> None:
+        result = get_current_time("   ")
+        assert "currently" in result.lower()
+
+    def test_invalid_timezone_fallback(self) -> None:
+        """Unknown timezone falls back to local time or error message."""
+        result = get_current_time("Invalid/Timezone")
+        assert "currently" in result.lower() or "time" in result.lower()
+
+
+# ---------------------------------------------------------------------------
+# Holidays: check_public_holiday
+# ---------------------------------------------------------------------------
+
+
+class TestCheckPublicHoliday:
+    """Tests for UK public holiday lookup."""
+
+    def test_today_returns_valid_message(self) -> None:
+        """Returns either holiday or normal working day message."""
+        result = check_public_holiday("today")
+        assert "today" in result.lower()
+        assert "working day" in result.lower() or "holiday" in result.lower()
+        assert "closed" in result.lower() or "normal" in result.lower()
+
+    def test_tomorrow_returns_valid_message(self) -> None:
+        result = check_public_holiday("tomorrow")
+        assert "tomorrow" in result.lower()
+        assert "working day" in result.lower() or "holiday" in result.lower()
+
+    def test_empty_when_defaults_to_today(self) -> None:
+        result = check_public_holiday("")
+        assert "today" in result.lower()
+
+    def test_whitespace_when_defaults_to_today(self) -> None:
+        result = check_public_holiday("   ")
+        assert "today" in result.lower()
+
+    def test_case_insensitive_tomorrow(self) -> None:
+        result = check_public_holiday("TOMORROW")
+        assert "tomorrow" in result.lower()
+
+    def test_known_holiday_date(self) -> None:
+        """On a known UK holiday, returns holiday message with office closed."""
+        from datetime import date
+
+        with patch("tools.holidays.date") as mock_date:
+            mock_date.today.return_value = date(2026, 1, 1)
+            mock_date.fromisoformat = date.fromisoformat  # keep real impl for API parsing
+            result = check_public_holiday("today")
+        assert "holiday" in result.lower()
+        assert "closed" in result.lower()
+        assert "new year" in result.lower() or "1" in result
+
+    def test_tomorrow_is_holiday(self) -> None:
+        """When tomorrow is a known holiday, returns appropriate message."""
+        from datetime import date
+
+        with patch("tools.holidays.date") as mock_date:
+            mock_date.today.return_value = date(2025, 12, 31)
+            mock_date.fromisoformat = date.fromisoformat
+            result = check_public_holiday("tomorrow")
+        assert "tomorrow" in result.lower()
+        assert "holiday" in result.lower()
+        assert "closed" in result.lower()
+
+    def test_yesterday_returns_valid_message(self) -> None:
+        result = check_public_holiday("yesterday")
+        assert "yesterday" in result.lower()
+        assert "was" in result.lower() or "is" in result.lower()
+
+    def test_day_before_yesterday(self) -> None:
+        result = check_public_holiday("the day before yesterday")
+        assert "day before yesterday" in result.lower() or "yesterday" in result.lower()
+
+    def test_day_after_tomorrow(self) -> None:
+        result = check_public_holiday("the day after tomorrow")
+        assert "day after tomorrow" in result.lower() or "tomorrow" in result.lower()
+
+    def test_specific_date_iso_format(self) -> None:
+        """Specific date as YYYY-MM-DD returns holiday or working day."""
+        result = check_public_holiday("2026-12-25")  # Christmas
+        assert "holiday" in result.lower()
+        assert "closed" in result.lower()
+        assert "christmas" in result.lower() or "25" in result
+
+    def test_specific_date_normal_day(self) -> None:
+        result = check_public_holiday("2026-03-15")  # Random weekday
+        assert "working day" in result.lower()
+
+    def test_invalid_when_returns_helpful_message(self) -> None:
+        result = check_public_holiday("next week")
+        assert "didn't understand" in result.lower() or "try" in result.lower()
+        assert "today" in result.lower() or "tomorrow" in result.lower()

@@ -1,4 +1,9 @@
-"""Person directory lookup for The Shard reception."""
+"""Person directory lookup for The Shard reception.
+
+Provides search_persons_for_lookup (partial name/company) and lookup_person
+(full lookup with floor, room, availability). All responses are formatted
+for voice: short, natural, visitor-friendly.
+"""
 
 from __future__ import annotations
 

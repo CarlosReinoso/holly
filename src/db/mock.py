@@ -1,4 +1,8 @@
-"""MockRepository: in-memory implementation with mock data."""
+"""MockRepository: in-memory implementation with mock data.
+
+Used for development and testing. Replace with a real implementation
+(e.g. PostgreSQL, REST API) when deploying to production.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +13,7 @@ class MockRepository(Repository):
     """In-memory repository with mock directory and facility data."""
 
     def __init__(self) -> None:
+        # Person directory: name -> {floor, room, company, status, optional ETA fields}
         self._persons: dict[str, dict] = {
             "Sarah Thompson": {
                 "floor": 18,
@@ -96,6 +101,7 @@ class MockRepository(Repository):
                 "arrival_eta_minutes": 15,
             },
         }
+        # Facility catalog: key -> (search_terms for semantic match, info_text)
         self._facilities: dict[str, tuple[list[str], str]] = {
             "bathroom": (
                 ["toilet", "restroom", "loo", "lavatory", "wc", "gents", "ladies"],
@@ -225,6 +231,7 @@ class MockRepository(Repository):
         }
 
     def search_persons(self, query: str) -> list[tuple[str, dict]]:
+        """Match persons where every query word appears in their full name."""
         if not query or not query.strip():
             return []
         words = [w.lower().strip() for w in query.split() if w.strip()]
@@ -237,6 +244,7 @@ class MockRepository(Repository):
         ]
 
     def search_persons_by_context(self, query: str) -> list[tuple[str, dict]]:
+        """Match persons where every query word appears in name or company."""
         if not query or not query.strip():
             return []
         words = [w.lower().strip() for w in query.split() if w.strip()]
@@ -249,6 +257,7 @@ class MockRepository(Repository):
         ]
 
     def get_person(self, name: str) -> tuple[str, dict] | None:
+        """Exact name lookup (case-insensitive). Returns canonical name + data."""
         if not name or not name.strip():
             return None
         key = next(
@@ -257,9 +266,11 @@ class MockRepository(Repository):
         return (key, self._persons[key]) if key else None
 
     def get_all_facilities(self) -> list[tuple[str, list[str], str]]:
+        """List all facilities: (key, search_terms, info_text)."""
         return [(k, list(t), info) for k, (t, info) in self._facilities.items()]
 
     def get_facility(self, key: str) -> tuple[list[str], str] | None:
+        """Lookup facility by key. Normalizes spaces to underscores, lowercase."""
         if not key or not key.strip():
             return None
         k = key.strip().lower().replace(" ", "_")

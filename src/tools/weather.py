@@ -1,4 +1,8 @@
-"""Weather lookup for The Shard reception - real API integration."""
+"""Weather lookup for The Shard reception.
+
+Uses the Open-Meteo API (no key required). Supports UK cities via a
+predefined coordinate map; other locations use the geocoding API.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +13,7 @@ import httpx
 
 logger = logging.getLogger("agent")
 
-# Open-Meteo API - no API key required for non-commercial use
+# Open-Meteo: free, no API key for non-commercial use
 OPEN_METEO_BASE = "https://api.open-meteo.com/v1"
 GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 
@@ -51,12 +55,12 @@ WEATHER_DESCRIPTIONS: dict[int, str] = {
 
 
 def _get_weather_description(code: int) -> str:
-    """Convert WMO weather code to human-readable description."""
+    """Convert WMO weather code to a short, voice-friendly description."""
     return WEATHER_DESCRIPTIONS.get(code, "mixed conditions" if code > 0 else "clear")
 
 
 def _resolve_coordinates(location: str) -> tuple[float, float] | None:
-    """Resolve location name to latitude/longitude."""
+    """Resolve location to (lat, lon) via predefined city map or geocoding."""
     key = location.strip().lower()
     if key in CITY_COORDINATES:
         return CITY_COORDINATES[key]

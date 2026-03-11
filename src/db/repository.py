@@ -1,4 +1,8 @@
-"""Repository layer. Abstraction for data access; implementations connect to DB, API, etc."""
+"""Repository layer for directory and facility data.
+
+Abstract interface so we can swap MockRepository for a real DB or API
+without changing the tools that depend on it.
+"""
 
 from __future__ import annotations
 
