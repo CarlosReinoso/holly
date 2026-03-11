@@ -1,8 +1,11 @@
 """The Shard Receptionist - A voice AI receptionist for The Shard, London."""
 
+# Standard library
 import logging
 
+# Third-party
 from dotenv import load_dotenv
+
 from livekit import rtc
 from livekit.agents import (
     Agent,
@@ -19,13 +22,13 @@ from livekit.agents import (
 from livekit.plugins import noise_cancellation, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-from tools import directory as directory_tools
-from tools.facility import get_available_facilities, get_facility_info
-from tools.weather import lookup_weather
+# Local application
+import tools
 
 logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
+
 
 RECEPTIONIST_INSTRUCTIONS = """You are Emma, a professional and friendly receptionist working at The Shard in London.
 
@@ -138,7 +141,7 @@ class ShardReceptionist(Agent):
             query: Partial name and/or company (e.g. "John Smith", "Sarah Acme")
         """
         logger.info("Search persons: %s", query)
-        return directory_tools.search_persons_for_lookup(query)
+        return tools.search_persons_for_lookup(query)
 
     @function_tool
     async def lookup_person(self, context: RunContext, name: str) -> str:
@@ -151,7 +154,7 @@ class ShardReceptionist(Agent):
             name: Full name of the person (e.g. "John Smith", "Sarah Thompson")
         """
         logger.info("Looking up person: %s", name)
-        return directory_tools.lookup_person(name)
+        return tools.lookup_person(name)
 
     @function_tool
     async def get_available_facilities(self, context: RunContext) -> str:
@@ -162,7 +165,7 @@ class ShardReceptionist(Agent):
         with that key.
         """
         logger.info("Listing available facilities")
-        return get_available_facilities()
+        return tools.get_available_facilities()
 
     @function_tool
     async def get_facility_info(self, context: RunContext, facility_key: str) -> str:
@@ -175,7 +178,7 @@ class ShardReceptionist(Agent):
             facility_key: Canonical facility key (e.g. "bathroom", "lifts", "parking", "viewing_gallery")
         """
         logger.info("Facility lookup: %s", facility_key)
-        return get_facility_info(facility_key)
+        return tools.get_facility_info(facility_key)
 
     @function_tool
     async def lookup_weather(
@@ -190,7 +193,7 @@ class ShardReceptionist(Agent):
             location: City or location (default London)
         """
         logger.info("Weather lookup: %s", location)
-        return lookup_weather(location)
+        return tools.lookup_weather(location)
 
 
 server = AgentServer()
@@ -202,7 +205,6 @@ def prewarm(proc: JobProcess) -> None:
 
 
 server.setup_fnc = prewarm
-
 
 @server.rtc_session(agent_name="holly")
 async def my_agent(ctx: JobContext) -> None:

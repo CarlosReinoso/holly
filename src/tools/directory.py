@@ -2,136 +2,12 @@
 
 from __future__ import annotations
 
-# Mock person directory - in production this would be a database or directory service
-# Room numbers use hotel standard: floor + 2-digit room (e.g. 1801 = Floor 18, Room 01)
-PERSON_DIRECTORY: dict[str, dict] = {
-    "Sarah Thompson": {
-        "floor": 18,
-        "room": "1801",
-        "company": "Acme Finance",
-        "status": "available",
-    },
-    "Michael Carter": {
-        "floor": 21,
-        "room": "2103",
-        "company": "Carter Legal",
-        "status": "in_meeting",
-        "meeting_eta_minutes": 15,
-    },
-    "Emma Davis": {
-        "floor": 12,
-        "room": "1205",
-        "company": "Davis Marketing",
-        "status": "away",
-        "return_time": "afternoon",
-    },
-    "James Wilson": {
-        "floor": 24,
-        "room": "2401",
-        "company": "Wilson Tech",
-        "status": "available",
-    },
-    "Sophie Brown": {
-        "floor": 15,
-        "room": "1512",
-        "company": "Brown HR",
-        "status": "in_meeting",
-        "meeting_eta_minutes": 5,
-    },
-    "David Chen": {
-        "floor": 19,
-        "room": "1908",
-        "company": "Acme Finance",
-        "status": "available",
-    },
-    "Olivia Martinez": {
-        "floor": 22,
-        "room": "2211",
-        "company": "Carter Legal",
-        "status": "away",
-        "return_time": "tomorrow",
-    },
-    "John Smith": {
-        "floor": 14,
-        "room": "1402",
-        "company": "Smith Engineering",
-        "status": "available",
-    },
-    "John Williams": {
-        "floor": 20,
-        "room": "2007",
-        "company": "Acme Finance",
-        "status": "available",
-    },
-    "Rachel Green": {
-        "floor": 16,
-        "room": "1604",
-        "company": "Green Associates",
-        "status": "out_to_lunch",
-        "return_time": "1pm",
-    },
-    "Tom Bradley": {
-        "floor": 23,
-        "room": "2309",
-        "company": "Bradley Consulting",
-        "status": "on_phone",
-        "call_eta_minutes": 10,
-    },
-    "Lisa Park": {
-        "floor": 17,
-        "room": "1702",
-        "company": "Park Design",
-        "status": "do_not_disturb",
-    },
-    "Alex Kumar": {
-        "floor": 19,
-        "room": "1915",
-        "company": "Wilson Tech",
-        "status": "in_transit",
-        "arrival_eta_minutes": 15,
-    },
-}
+import db
 
 
 def _normalize_name(name: str) -> str:
     """Normalize name for fuzzy matching (strip, title case)."""
     return " ".join(word.strip().capitalize() for word in name.split() if word.strip())
-
-
-def _search_persons(query: str) -> list[tuple[str, dict]]:
-    """Find persons by partial/semantic name match.
-
-    Matches when all query words appear in the person's name (case-insensitive).
-    """
-    if not query or not query.strip():
-        return []
-    words = [w.lower().strip() for w in query.split() if w.strip()]
-    if not words:
-        return []
-    matches: list[tuple[str, dict]] = []
-    for name, data in PERSON_DIRECTORY.items():
-        if all(word in name.lower() for word in words):
-            matches.append((name, data))
-    return matches
-
-
-def _search_persons_by_context(query: str) -> list[tuple[str, dict]]:
-    """Find persons by name or company context.
-
-    Matches when all query words appear in the person's name OR company.
-    E.g. "John Smith Engineering" matches "John Smith" (Smith Engineering).
-    """
-    if not query or not query.strip():
-        return []
-    words = [w.lower().strip() for w in query.split() if w.strip()]
-    if not words:
-        return []
-    matches: list[tuple[str, dict]] = []
-    for name, data in PERSON_DIRECTORY.items():
-        searchable = f"{name.lower()} {data['company'].lower()}"
-        if all(word in searchable for word in words):
-            matches.append((name, data))
-    return matches
 
 
 def search_persons_for_lookup(query: str) -> str:
@@ -151,7 +27,7 @@ def search_persons_for_lookup(query: str) -> str:
     if not query or not query.strip():
         return "I didn't catch that. Who would you like to visit? You can give a name, or a name and company."
 
-    matches = _search_persons_by_context(query)
+    matches = db.search_persons_by_context(query)
     if not matches:
         return f"I couldn't find anyone matching '{query.strip()}'. Try the full name or a different spelling."
 
@@ -171,16 +47,20 @@ def lookup_person(name: str) -> str:
     if not name or not name.strip():
         return "I didn't catch the name. Who would you like to visit?"
 
-    matches = _search_persons(name)
+    matches = db.search_persons(name)
     if not matches:
-        return f"I'm sorry, I couldn't find anyone named {_normalize_name(name)} in our directory. They may work in a different building, or you might have the spelling slightly wrong. Would you like to try again or leave a message?"
+        return (
+            f"I'm sorry, I couldn't find anyone named {_normalize_name(name)} in our directory. "
+            "They may work in a different building, or you might have the spelling slightly wrong. "
+            "Would you like to try again or leave a message?"
+        )
 
     if len(matches) > 1:
         lines = [
             f"I found {len(matches)} people with that name:",
             *(
-                f"- {name} ({data['company']} – Floor {data['floor']}, Room {data['room']})"
-                for name, data in matches
+                f"- {n} ({d['company']} - Floor {d['floor']}, Room {d['room']})"
+                for n, d in matches
             ),
             "Which one are you visiting?",
         ]

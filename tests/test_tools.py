@@ -1,5 +1,7 @@
 """Unit tests for The Shard receptionist tools."""
 
+from unittest.mock import patch
+
 from tools.directory import lookup_person, search_persons_for_lookup
 from tools.facility import get_available_facilities, get_facility_info
 from tools.weather import lookup_weather
@@ -107,19 +109,57 @@ class TestLookupPerson:
         assert "John Williams" not in result
         assert "Which one" not in result
 
-    def test_in_meeting_without_eta_uses_short_while(self) -> None:
-        """Person in meeting without meeting_eta_minutes uses fallback."""
-        # Sophie Brown has meeting_eta_minutes=5; we need one without
-        # The implementation uses "a short while" when eta is missing
+    def test_in_meeting_with_eta_shows_minutes(self) -> None:
+        """Person in meeting with meeting_eta_minutes shows specific time."""
         result = lookup_person("Sophie Brown")
         assert "meeting" in result.lower()
-        assert "5" in result  # she has meeting_eta_minutes
+        assert "5" in result
 
-    def test_away_without_return_time(self) -> None:
-        """Emma has return_time=afternoon; Olivia has tomorrow."""
+    def test_in_meeting_without_eta_uses_short_while(self) -> None:
+        """Person in meeting without meeting_eta_minutes uses 'a short while' fallback."""
+        import db
+        from db.mock import MockRepository
+
+        repo = MockRepository()
+        repo._persons["Ella Test"] = {
+            "floor": 1,
+            "room": "101",
+            "company": "Test Co",
+            "status": "in_meeting",
+        }
+        with patch.object(db, "_repo", repo):
+            result = lookup_person("Ella Test")
+        assert "meeting" in result.lower()
+        assert "short while" in result.lower()
+
+    def test_name_with_leading_trailing_spaces(self) -> None:
+        """Lookup trims and finds person with padded name."""
+        result = lookup_person("  Sarah Thompson  ")
+        assert "Floor 18" in result
+        assert "Sarah Thompson" in result
+
+    def test_away_with_return_time(self) -> None:
+        """Person away with return_time shows it (Olivia has tomorrow)."""
         result = lookup_person("Olivia Martinez")
         assert "away" in result.lower() or "isn't" in result.lower()
         assert "tomorrow" in result
+
+    def test_away_without_return_time_uses_later(self) -> None:
+        """Person away without return_time uses 'later' fallback."""
+        import db
+        from db.mock import MockRepository
+
+        repo = MockRepository()
+        repo._persons["Bob Away"] = {
+            "floor": 1,
+            "room": "102",
+            "company": "Test Co",
+            "status": "away",
+        }
+        with patch.object(db, "_repo", repo):
+            result = lookup_person("Bob Away")
+        assert "away" in result.lower() or "isn't" in result.lower()
+        assert "later" in result.lower()
 
 
 # ---------------------------------------------------------------------------
@@ -168,6 +208,12 @@ class TestSearchPersonsForLookup:
     def test_whitespace_only_query(self) -> None:
         result = search_persons_for_lookup("   ")
         assert "who" in result.lower() or "name" in result.lower()
+
+    def test_query_with_extra_spaces_between_words(self) -> None:
+        """Multiple spaces between words still matches."""
+        result = search_persons_for_lookup("John   Smith")
+        assert "John Smith" in result
+        assert "Smith Engineering" in result
 
 
 # ---------------------------------------------------------------------------
@@ -261,6 +307,22 @@ class TestGetFacilityInfo:
         result = get_facility_info("")
         assert "get_available_facilities" in result or "what" in result.lower()
 
+    def test_facility_key_with_leading_trailing_spaces(self) -> None:
+        """Key with spaces is normalized and found."""
+        result = get_facility_info("  bathroom  ")
+        assert "restroom" in result.lower() or "left" in result.lower()
+
+    def test_facility_key_case_insensitive(self) -> None:
+        """Uppercase key normalizes and finds facility."""
+        result = get_facility_info("BATHROOM")
+        assert "restroom" in result.lower() or "left" in result.lower()
+
+    def test_facility_with_no_search_terms(self) -> None:
+        """Facilities with empty search terms (e.g. security) still return info."""
+        result = get_facility_info("security")
+        assert "security" in result.lower()
+        assert len(result) > 20
+
 
 # ---------------------------------------------------------------------------
 # Weather: lookup_weather
@@ -306,3 +368,9 @@ class TestLookupWeather:
     def test_unknown_city_handles_gracefully(self) -> None:
         result = lookup_weather("Xyzabc123nowhere")
         assert "couldn't find" in result.lower() or "london" in result.lower()
+
+    def test_uppercase_location_normalizes(self) -> None:
+        """Location like LONDON is resolved via lowercase lookup."""
+        result = lookup_weather("LONDON")
+        assert "london" in result.lower()
+        assert "degree" in result.lower() or "celsius" in result.lower()
