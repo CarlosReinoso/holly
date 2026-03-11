@@ -19,7 +19,7 @@ from livekit.agents import (
 from livekit.plugins import noise_cancellation, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-from tools.directory import lookup_employee, search_employees_for_lookup
+from tools import directory as directory_tools
 from tools.facility import get_available_facilities, get_facility_info
 from tools.weather import lookup_weather
 
@@ -108,8 +108,8 @@ Example:
 Tool usage rules:
 
 You have access to tools that can:
-- Look up employees in the building directory
-- Check employee availability
+- Look up people in the building directory (floor, room, company)
+- Check person availability
 - Retrieve building information
 
 Use tools when you need information you don't already have.
@@ -127,31 +127,31 @@ class ShardReceptionist(Agent):
         super().__init__(instructions=RECEPTIONIST_INSTRUCTIONS)
 
     @function_tool
-    async def search_employees_for_lookup(self, context: RunContext, query: str) -> str:
-        """Search employees by name and/or department for semantic lookup.
+    async def search_persons_for_lookup(self, context: RunContext, query: str) -> str:
+        """Search persons by name and/or company for semantic lookup.
 
-        Use when the visitor gives a partial name or context (e.g. "John", "John from Engineering",
-        "Sarah in Finance"). Returns full names and departments. Pick the correct person, then
-        call lookup_employee with their full name.
+        Use when the visitor gives a partial name or context (e.g. "John", "John from Smith Engineering",
+        "Sarah at Acme"). Returns full names and companies. Pick the correct person, then
+        call lookup_person with their full name.
 
         Args:
-            query: Partial name and/or department (e.g. "John Engineering", "Sarah")
+            query: Partial name and/or company (e.g. "John Smith", "Sarah Acme")
         """
-        logger.info("Search employees: %s", query)
-        return search_employees_for_lookup(query)
+        logger.info("Search persons: %s", query)
+        return directory_tools.search_persons_for_lookup(query)
 
     @function_tool
-    async def lookup_employee(self, context: RunContext, name: str) -> str:
-        """Look up an employee in The Shard directory by full name.
+    async def lookup_person(self, context: RunContext, name: str) -> str:
+        """Look up a person in The Shard directory by full name.
 
-        Call this after search_employees_for_lookup when you've resolved the correct person.
-        Returns floor, department, and availability. Use the full name (e.g. "John Smith").
+        Call this after search_persons_for_lookup when you've resolved the correct person.
+        Returns floor, room number, company, and availability. Use the full name (e.g. "John Smith").
 
         Args:
             name: Full name of the person (e.g. "John Smith", "Sarah Thompson")
         """
-        logger.info("Looking up employee: %s", name)
-        return lookup_employee(name)
+        logger.info("Looking up person: %s", name)
+        return directory_tools.lookup_person(name)
 
     @function_tool
     async def get_available_facilities(self, context: RunContext) -> str:
