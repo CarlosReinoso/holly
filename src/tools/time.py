@@ -1,6 +1,6 @@
 """Current time lookup for The Shard reception.
 
-Uses the World Time API (no key required). Lets Emma give visitors the
+Uses the World Time API (no key required). Lets Holly give visitors the
 current time for context, e.g. when someone is in a meeting and due out soon.
 """
 

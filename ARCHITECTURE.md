@@ -6,7 +6,7 @@ This document describes the project concept, public APIs, workflow, and architec
 
 ## 1. Project Concept
 
-**Holly** is a voice AI receptionist application that powers **Emma**, a virtual receptionist for [The Shard](https://www.the-shard.com/) in London. Visitors speak to Emma over voice (via web, mobile app, or telephony) to:
+**Holly** is a voice AI receptionist application that powers **Holly**, a virtual receptionist for [The Shard](https://www.the-shard.com/) in London. Visitors speak to Holly over voice (via web, mobile app, or telephony) to:
 
 - **Directory lookup** — Find people in the building (floor, room, company, availability)
 - **Facility directions** — Get directions to bathrooms, lifts, café, parking, viewing gallery, etc.
@@ -15,7 +15,7 @@ This document describes the project concept, public APIs, workflow, and architec
 - **Public holidays** — "Is the office open tomorrow?" (UK bank holidays)
 - **Natural conversation** — Short, human responses; no robotic scripts
 
-Emma handles ambiguous queries (e.g. "John" when there are two Johns), disambiguation, and availability statuses like *in a meeting*, *away*, *out to lunch*.
+Holly handles ambiguous queries (e.g. "John" when there are two Johns), disambiguation, and availability statuses like *in a meeting*, *away*, *out to lunch*.
 
 ---
 
@@ -31,7 +31,7 @@ The project integrates with **no API keys required** for external services:
 
 ### LiveKit Cloud Inference (hosted services)
 
-Emma uses LiveKit Cloud for STT, LLM, and TTS. These are invoked via the LiveKit Agents SDK and do not require direct HTTP calls from application code:
+Holly uses LiveKit Cloud for STT, LLM, and TTS. These are invoked via the LiveKit Agents SDK and do not require direct HTTP calls from application code:
 
 | Component | Model | Purpose |
 |-----------|-------|---------|
@@ -96,7 +96,7 @@ Emma uses LiveKit Cloud for STT, LLM, and TTS. These are invoked via the LiveKit
 3. **Agent registration** — `@server.rtc_session(agent_name="holly")` registers the agent so LiveKit can dispatch jobs.
 4. **Job received** — When a user joins a room or initiates a call, LiveKit sends a job to the worker.
 5. **Session creation** — `AgentSession` is created with STT, LLM, TTS, turn detection, and VAD.
-6. **Room connection** — `session.start(agent=ShardReceptionist(), room=ctx.room)` attaches Emma to the room.
+6. **Room connection** — `session.start(agent=ShardReceptionist(), room=ctx.room)` attaches Holly to the room.
 7. **Connect** — `ctx.connect()` connects the worker to the room and begins handling audio.
 
 ### 4.2 Per-turn conversation flow
@@ -149,7 +149,7 @@ All tools return **voice-friendly strings**; the agent does not expose internal 
 
 ### 5.1 Agent (`src/agent.py`)
 
-- **`ShardReceptionist`** — Extends LiveKit `Agent` with system instructions (Emma’s personality and conversation guidelines) and `@function_tool` methods.
+- **`ShardReceptionist`** — Extends LiveKit `Agent` with system instructions (Holly’s personality and conversation guidelines) and `@function_tool` methods.
 - **`AgentServer`** — Single server instance; handles job dispatch and lifecycle.
 - **`prewarm`** — Loads Silero VAD into `JobProcess.userdata` for reuse across sessions.
 - **`my_agent`** — RTC session handler; creates `AgentSession`, wires STT/LLM/TTS, and connects to the room.

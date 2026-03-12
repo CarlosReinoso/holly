@@ -1,6 +1,6 @@
 """The Shard Receptionist - A ) for The Shard, London.
 
-This module defines Emma, a conversational receptionist agent that helps visitors
+This module defines Holly, a conversational receptionist agent that helps visitors
 with directory lookups, facility directions, and general building information.
 Runs on LiveKit with STT/TTS/LLM via LiveKit Cloud Inference.
 """
@@ -36,9 +36,9 @@ logger = logging.getLogger("agent")
 load_dotenv(".env.local")
 
 
-# System prompt that defines Emma's role, personality, and conversation flow.
+# System prompt that defines Holly's role, personality, and conversation flow.
 # Kept here for readability; in production you might load from a file.
-RECEPTIONIST_INSTRUCTIONS = """You are Emma, a professional and friendly receptionist working at The Shard in London.
+RECEPTIONIST_INSTRUCTIONS = """You are Holly, a professional and friendly receptionist working at The Shard in London.
 
 Visitors will approach your reception desk and speak to you. Your job is to assist them just like a real receptionist would in a large office building.
 
@@ -138,7 +138,7 @@ class ShardReceptionist(Agent):
     """Voice receptionist agent for The Shard.
 
     Extends LiveKit Agent with function tools for directory lookup, facility info,
-    and weather. Tools are exposed to the LLM so Emma can answer visitor questions
+    and weather. Tools are exposed to the LLM so Holly can answer visitor questions
     in real time.
     """
 
@@ -146,10 +146,10 @@ class ShardReceptionist(Agent):
         super().__init__(instructions=RECEPTIONIST_INSTRUCTIONS)
 
     async def on_enter(self) -> None:
-        """Introduce Emma when the RTC session is connected."""
+        """Introduce Holly when the RTC session is connected."""
         await self.session.generate_reply(
             instructions=(
-                "Introduce yourself as Emma, the virtual receptionist at The Shard in London. "
+                "Introduce yourself as Holly, the virtual receptionist at The Shard in London. "
                 "Greet the visitor warmly and offer your assistance. Keep it short and natural for voice."
             ),
         )

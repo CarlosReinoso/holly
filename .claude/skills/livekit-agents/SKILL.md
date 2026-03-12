@@ -251,7 +251,7 @@ Examples in documentation demonstrate specific patterns. Copying code without un
 
 ### Skipping Tests Because "It's Just Prompts"
 
-Agent behavior is code. Prompt changes affect behavior as much as code changes. Test agent behavior with the same rigor as traditional software. **Never deliver an agent implementation without at least one test file.**
+Agent behavior is code. Prompt changes affect behavior as mucsh as code changes. Test agent behavior with the same rigor as traditional software. **Never deliver an agent implementation without at least one test file.**
 
 ### Assuming Model Knowledge Is Current
 

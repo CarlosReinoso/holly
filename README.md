@@ -4,7 +4,7 @@
 
 # Holly — The Shard Receptionist
 
-A voice AI receptionist for [The Shard](https://www.the-shard.com/) in London. Visitors speak to **Emma**, a friendly virtual receptionist who looks up people in the directory, gives directions to facilities, and answers common building questions—all over voice, powered by [LiveKit Agents](https://github.com/livekit/agents) and [LiveKit Cloud](https://cloud.livekit.io/).
+A voice AI receptionist for [The Shard](https://www.the-shard.com/) in London. Visitors speak to **Holly**, a friendly virtual receptionist who looks up people in the directory, gives directions to facilities, and answers common building questions—all over voice, powered by [LiveKit Agents](https://github.com/livekit/agents) and [LiveKit Cloud](https://cloud.livekit.io/).
 
 ---
 
@@ -17,7 +17,7 @@ A voice AI receptionist for [The Shard](https://www.the-shard.com/) in London. V
 - **Public holidays** — "Is the office open tomorrow?" or "Is it a bank holiday?"
 - **Natural conversation** — Short, human responses; no robotic scripts
 
-Emma handles ambiguous queries (e.g. "John" when there are two Johns), disambiguation, and availability statuses like *in a meeting*, *away*, *out to lunch*.
+Holly handles ambiguous queries (e.g. "John" when there are two Johns), disambiguation, and availability statuses like *in a meeting*, *away*, *out to lunch*.
 
 ---
 
@@ -25,7 +25,7 @@ Emma handles ambiguous queries (e.g. "John" when there are two Johns), disambigu
 
 ```
 src/
-├── agent.py          # LiveKit agent entrypoint, Emma’s system prompt, and tool bindings
+├── agent.py          # LiveKit agent entrypoint, Holly’s system prompt, and tool bindings
 ├── db/
 │   ├── repository.py # Abstract interface for directory/facility data
 │   ├── mock.py       # In-memory mock (used for dev and tests)
@@ -79,7 +79,7 @@ lk app env -w -d .env.local
    uv run python src/agent.py download-files
    ```
 
-2. **Console mode** — talk to Emma in your terminal:
+2. **Console mode** — talk to Holly in your terminal:
 
    ```bash
    uv run python src/agent.py console

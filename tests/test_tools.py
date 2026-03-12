@@ -37,8 +37,8 @@ class TestLookupPerson:
         assert "lobby" in result.lower() or "seat" in result.lower()
 
     def test_person_away_offers_message_option(self) -> None:
-        result = lookup_person("Emma Davis")
-        assert "Emma Davis" in result
+        result = lookup_person("Holly Davis")
+        assert "Holly Davis" in result
         assert "away" in result.lower() or "isn't" in result.lower()
         assert "afternoon" in result
         assert "message" in result.lower() or "reschedule" in result.lower()

@@ -28,7 +28,7 @@ class MockRepository(Repository):
                 "status": "in_meeting",
                 "meeting_eta_minutes": 15,
             },
-            "Emma Davis": {
+            "Holly Davis": {
                 "floor": 12,
                 "room": "1205",
                 "company": "Davis Marketing",

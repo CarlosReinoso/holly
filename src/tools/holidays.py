@@ -1,6 +1,6 @@
 """UK public holiday lookup for The Shard reception.
 
-Uses the Nager.Date API (no key required). Lets Emma tell visitors when
+Uses the Nager.Date API (no key required). Lets Holly tell visitors when
 the office is closed for bank holidays.
 """
 
