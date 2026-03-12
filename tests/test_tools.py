@@ -450,7 +450,9 @@ class TestCheckPublicHoliday:
 
         with patch("tools.holidays.date") as mock_date:
             mock_date.today.return_value = date(2026, 1, 1)
-            mock_date.fromisoformat = date.fromisoformat  # keep real impl for API parsing
+            mock_date.fromisoformat = (
+                date.fromisoformat  # keep real impl for API parsing
+            )
             result = check_public_holiday("today")
         assert "holiday" in result.lower()
         assert "closed" in result.lower()

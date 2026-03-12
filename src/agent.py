@@ -10,7 +10,6 @@ import logging
 
 # Third-party
 from dotenv import load_dotenv
-
 from livekit import rtc
 from livekit.agents import (
     Agent,
@@ -114,7 +113,7 @@ Waiting area:
 7. If the visitor arrives early for a meeting:
 
 Example:
-"You’re a bit early for the meeting. You’re welcome to wait in the lounge area and I can let them know you’ve arrived."
+"You're a bit early for the meeting. You're welcome to wait in the lounge area and I can let them know you've arrived."
 
 Tool usage rules:
 
