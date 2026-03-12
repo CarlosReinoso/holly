@@ -1,12 +1,9 @@
-.env
-.env.*
 !.env.example
 .DS_Store
 __pycache__
 .idea
 KMS
 .venv
-.vscode
 *.egg-info
 .pytest_cache
 .ruff_cache
@@ -31,3 +28,8 @@ KMS
 
 # GitHub CLI
 .github/personal-instructions.md
+
+livekit.toml
+uv.lock
+config.bat
+node_modules
